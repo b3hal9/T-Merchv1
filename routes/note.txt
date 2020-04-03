@@ -1,0 +1,86 @@
+//Step 1 Get paypal-rest-sdk module
+//Step 2 Configure paypal for client-side LIKE This
+
+
+        paypal.configure({
+        'mode': 'sandbox',    //sandbox || live
+        'client_id': 'Your_client_id',
+        'client_secret': 'Your_secret',
+    })
+
+//Now, In payment route, First generate create_payment_json like below:
+
+   const create_payment_json = {
+        "intent": "sale",
+        "payer": {
+            "payment_method" : "paypal"
+        },
+        "redirect_urls" :{
+            "return_url": "",
+            "cancel_url": "",
+        },
+        "transactions": [{
+            "item_list": {
+                "items" : [{                                
+                    "name" : "item-name",
+                    "sku" : "item",
+                    "price": "1.00",
+                    "currency" : "USD",
+                    "quantity" : 1,
+                }]
+            },
+            "amount": {
+                "currency" : "USD",
+                "total" : "1.00",
+            },
+            "description": "This is the Payment Description."
+        }]
+    };
+
+
+    //After that pass create_payment_json to paypal.payment.create() function in payment route.
+
+      paypal.payment.create(create_payment_json, function(err,payment){
+        if(error){
+            throw error;
+        } else {
+            cosole.log("Create payment Response");
+            console.log(payment);
+        }
+    })
+
+    //Now generate execute_payment_json in Success Route:
+
+
+
+        const payerId = req.query.PayerID;
+        const paymentId = req.query.paymentId;
+
+
+        const execute_payment_json = {
+            "payer_id": payerId,
+            "transaction":[{
+                "amount": {
+                    "currency": "USD",
+                    "total": "25.00"
+                }
+            }]
+        };
+
+
+    //Pass paymentId and execute_payment_json to paypal.payment.execute() function in Success route.
+
+
+        paypal.payment.execute(paymentId,execute_payment_json, function(err,payment){
+        if(err){
+            console.log(err.response);
+            throw err;
+        } else{
+            console.log("Get Payment Response");
+            console.log(JSON.stringify(payment));
+            res.send('Success');
+
+        }
+    })
+
+    //Create cancel route incase of payment being cancelled.
